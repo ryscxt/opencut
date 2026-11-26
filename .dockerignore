@@ -1,0 +1,14 @@
+# The image is built from classic/ alone (see Dockerfile).
+*
+!classic
+classic/**/node_modules
+classic/**/.next
+classic/**/.turbo
+classic/**/.content-collections
+classic/**/.env*
+classic/**/target
+classic/.git*
+classic/.vscode
+classic/docs
+classic/rust
+classic/apps/desktop
