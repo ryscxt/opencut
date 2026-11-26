@@ -22,6 +22,12 @@ import {
 	runStorageMigrations,
 } from "@/services/storage/migrations";
 import type { Bookmark, SceneTracks, TScene } from "@/timeline";
+import {
+	keepMediaAsset,
+	keepMissingMediaAssets,
+	keepProject,
+	keepProjectIfChanged,
+} from "@/upload/client";
 
 function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 	if (!Array.isArray(raw)) return [];
@@ -157,6 +163,7 @@ class StorageService {
 		};
 
 		await this.projectsAdapter.set(project.metadata.id, serializedProject);
+		keepProject({ project: serializedProject });
 	}
 
 	async loadProject({
@@ -181,6 +188,8 @@ class StorageService {
 			);
 			return null;
 		}
+
+		keepProjectIfChanged({ project: serializedProject });
 
 		const scenes =
 			serializedProject.scenes?.map((scene) => ({
@@ -249,6 +258,8 @@ class StorageService {
 				continue;
 			}
 
+			keepProjectIfChanged({ project: serializedProject });
+
 			metadata.push({
 				id: serializedProject.metadata.id,
 				name: serializedProject.metadata.name,
@@ -298,6 +309,7 @@ class StorageService {
 		try {
 			await mediaAssetsAdapter.set(mediaAsset.id, mediaAsset.file);
 			await mediaMetadataAdapter.set(mediaAsset.id, metadata);
+			keepMediaAsset({ projectId, asset: mediaAsset });
 		} catch (error) {
 			try {
 				await mediaAssetsAdapter.remove(mediaAsset.id);
@@ -381,6 +393,8 @@ class StorageService {
 				mediaItems.push(item);
 			}
 		}
+
+		keepMissingMediaAssets({ projectId, assets: mediaItems });
 
 		return mediaItems;
 	}

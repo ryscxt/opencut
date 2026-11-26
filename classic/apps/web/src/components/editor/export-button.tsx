@@ -19,6 +19,7 @@ import {
 	getExportFileExtension,
 	downloadBuffer,
 } from "@/export";
+import { keepExport } from "@/upload/client";
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
@@ -129,11 +130,13 @@ function ExportPopover({
 		}
 
 		if (result.success && result.buffer) {
-			downloadBuffer({
+			const exported = {
 				buffer: result.buffer,
 				filename: `${activeProject.metadata.name}${getExportFileExtension({ format })}`,
 				mimeType: getExportMimeType({ format }),
-			});
+			};
+			downloadBuffer(exported);
+			keepExport({ projectId: activeProject.metadata.id, ...exported });
 
 			editor.project.clearExportState();
 			onOpenChange(false);
